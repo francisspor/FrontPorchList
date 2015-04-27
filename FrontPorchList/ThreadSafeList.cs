@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace FrontPorchList
 {
+    /// <summary>
+    /// My implementation of a generic list, which is pretty much a wrapper for just the standard list implementations, 
+    /// but it locks on an object before attempting to do a data changing access the list to make sure that the contents are always valid.
+    /// 
+    /// What I think I'd really do is use SynchronizedCollection<T>, cause it implements IList<T> also, and it's part of the framework, 
+    /// and is probably pretty good.
+    /// </summary>
+    /// <typeparam name="T">Generic type parameter</typeparam>
     public class ThreadSafeList<T> : IList<T>
     {
         // Internal list that actually holds the content
@@ -18,20 +26,18 @@ namespace FrontPorchList
 
         public IEnumerator<T> GetEnumerator()
         {
-            lock (lockObject)
-            {
-                return list.GetEnumerator();
-            }
+            return list.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            lock (lockObject)
-            {
-                return ((IList) list).GetEnumerator();
-            }
+            return ((IList) list).GetEnumerator();
         }
 
+        /// <summary>
+        /// Locks and waits, and adds an item to the intenal list, when clear.
+        /// </summary>
+        /// <param name="item"></param>
         public void Add(T item)
         {
             lock (lockObject)
@@ -40,6 +46,10 @@ namespace FrontPorchList
             }
         }
 
+
+        /// <summary>
+        /// Locks and clears the list.
+        /// </summary>
         public void Clear()
         {
             lock (lockObject)
@@ -55,10 +65,7 @@ namespace FrontPorchList
         /// <returns>bool if the internal collection contains the object</returns>
         public bool Contains(T item)
         {
-            lock (lockObject)
-            {
-                return list.Contains(item);
-            }
+            return list.Contains(item);
         }
 
 
@@ -93,26 +100,25 @@ namespace FrontPorchList
         /// </summary>
         public int Count
         {
-            get
-            {
-                lock (lockObject)
-                {
-                    return list.Count;
-                }
-            }
+            get { return list.Count; }
         }
 
+        /// <summary>
+        /// The list isn't readonly.
+        /// </summary>
         public bool IsReadOnly
         {
             get { return false; }
         }
 
+        /// <summary>
+        /// Locks and the calls the internal lists indexOf method.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public int IndexOf(T item)
         {
-            lock (lockObject)
-            {
-                return list.IndexOf(item);
-            }
+            return list.IndexOf(item);
         }
 
         public void Insert(int index, T item)
@@ -133,13 +139,7 @@ namespace FrontPorchList
 
         public T this[int index]
         {
-            get
-            {
-                lock (lockObject)
-                {
-                    return list[index];
-                }
-            }
+            get { return list[index]; }
             set
             {
                 lock (lockObject)
